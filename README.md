@@ -1,5 +1,5 @@
 # skrllr
-Another version of the OnePage Scroll jQuery plugin (https://github.com/peachananr/onepage-scroll) but in pure JS.
+Another version of the [OnePage Scroll jQuery plugin](https://github.com/peachananr/onepage-scroll) but in pure JS.
 
 A working example [here](http://builtbyedgar.com/lab/skrllr/)
 
