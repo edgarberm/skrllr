@@ -4,38 +4,42 @@ Another version of the OnePage Scroll jQuery plugin (https://github.com/peachana
 
 ## Usage
 
+### The HTML markup
+
 ```html
 <div class="wrapper">
-    <main>
-      <section class="section">
-        <h1>Section 01</h1>
-        <a href="#3" data-skrllr="3">Go to section 03</a>
-      </section>
-      <section class="section">
-        <h1>Section 02</h1>
-      </section>
-      <section class="section">
-        <h1>Section 03</h1>
-      </section>
-      <section class="section">
-        <h1>Section 04</h1>
-      </section>
-      <section class="section">
-        <h1>Section 05</h1>
-      </section>
-    </main>
-  </div>
+  <main>
+    <section class="section">
+      <h1>Section 01</h1>
+      <a href="#3" data-skrllr="3">Go to section 03</a>
+    </section>
+    <section class="section">
+      <h1>Section 02</h1>
+    </section>
+    <section class="section">
+      <h1>Section 03</h1>
+    </section>
+    <section class="section">
+      <h1>Section 04</h1>
+    </section>
+    <section class="section">
+      <h1>Section 05</h1>
+    </section>
+  </main>
+</div>
 
-  <nav class="main-menu">
-    <ul class="pagination">
-      <li><a></a></li>
-      <li><a></a></li>
-      <li><a></a></li>
-      <li><a></a></li>
-      <li><a></a></li>
-    </ul>
-  </nav>
+<nav class="main-menu">
+  <ul class="pagination">
+    <li><a></a></li>
+    <li><a></a></li>
+    <li><a></a></li>
+    <li><a></a></li>
+    <li><a></a></li>
+  </ul>
+</nav>
 ```
+
+### The css style
 
 ```css
 body, html {
@@ -74,6 +78,8 @@ body, html {
 }
 ```
 
+### The javascript code
+
 ```javascript
 document.addEventListener('DOMContentLoaded', (event) => {
   const skrllr = new Skrllr('main', {
@@ -87,6 +93,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
   function before (index, nextIndex, next) {
     console.log('Before transition');
+    console.log(index);
+    console.log(nextIndex);
+    console.log(next);
   }
 
   function after (index, nextIndex, next) {
