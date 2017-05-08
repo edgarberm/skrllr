@@ -4,6 +4,76 @@ Another version of the OnePage Scroll jQuery plugin (https://github.com/peachana
 
 ## Usage
 
+```html
+<div class="wrapper">
+    <main>
+      <section class="section">
+        <h1>Section 01</h1>
+        <a href="#3" data-skrllr="3">Go to section 03</a>
+      </section>
+      <section class="section">
+        <h1>Section 02</h1>
+      </section>
+      <section class="section">
+        <h1>Section 03</h1>
+      </section>
+      <section class="section">
+        <h1>Section 04</h1>
+      </section>
+      <section class="section">
+        <h1>Section 05</h1>
+      </section>
+    </main>
+  </div>
+
+  <nav class="main-menu">
+    <ul class="pagination">
+      <li><a></a></li>
+      <li><a></a></li>
+      <li><a></a></li>
+      <li><a></a></li>
+      <li><a></a></li>
+    </ul>
+  </nav>
+```
+
+```css
+body, html {
+  display: block;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  font-family: 'Helvetica Neue', helvetica, sans-serif;
+  overflow: hidden;
+}
+
+.skrllr-wrapper {
+  position: relative;
+  display: block;
+  width: 100vw;
+  height: 100%;
+  padding: 0;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+.skrllr-section {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.wrapper {
+  height: 100% !important;
+  height: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+}
+```
+
 ```javascript
 document.addEventListener('DOMContentLoaded', (event) => {
   const skrllr = new Skrllr('main', {
@@ -14,8 +84,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     beforeTransition: (index, nextIndex, next) => before(index, nextIndex, next),
     afterTransition: (index, nextIndex, next) => after(index, nextIndex, next),
   })
-
-  // setTimeout(() => skrllr.goTo(1), 2000)
 
   function before (index, nextIndex, next) {
     console.log('Before transition');
