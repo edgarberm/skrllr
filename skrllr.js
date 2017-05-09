@@ -1,7 +1,11 @@
 /**
  * @class: Skrllr
  *
- * Skrllr let you transform your website into a one page scroll website that allows users to scroll one page at a time
+ * Skrllr let you transform your website into a one page scroll website that allows users to scroll one page at a time.
+ * I wouldn't mind if you use this piece of code in your project as long as you give credit with a link to my site. www.builtbyedgar.com
+ *
+ * NOTE: to compile
+ * https://babeljs.io/repl/
  */
 class Skrllr {
 
@@ -13,6 +17,7 @@ class Skrllr {
       pagination: true,
       menu: null,
       updateURL: false,
+      hashPrefix: '',
       beforeTransition: null,
       afterTransition: null
     }
@@ -60,13 +65,13 @@ class Skrllr {
   addDataAttributes () {
     for (let i = 0; i < this.total; i++) {
       this.sections[i].classList.add('skrllr-section')
-      this.sections[i].dataset.skrllr = (i + 1)
-      this.position = this.position + 100
+      this.sections[i].dataset.skrllr = this.settings.hashPrefix + (i + 1)
+      // this.position = this.position + 100
 
       if (this.settings.pagination === true) {
         const items = this.settings.menu.querySelectorAll('li a')
-        items[i].dataset.skrllr = (i + 1)
-        items[i].href = `#${ (i + 1) }`
+        items[i].dataset.skrllr = this.settings.hashPrefix + (i + 1)
+        items[i].href = `#${ this.settings.hashPrefix }${ (i + 1) }`
         items[i].addEventListener('click', this.onPaginationClickHandler.bind(this), false)
       }
     }
@@ -90,19 +95,20 @@ class Skrllr {
    * Check hash for initial load
    */
   checkHash () {
-    if (window.location.hash !== '' && window.location.hash !== '#1') {
-      const index = window.location.hash.replace('#', '')
-      const item = this.el.querySelector(`[data-skrllr='${ index }']:not(a)`)
+    if (window.location.hash !== '' && window.location.hash !== `#${ this.settings.hashPrefix }1`) {
+      const index = window.location.hash.replace(`#${ this.settings.hashPrefix }`, '')
+      const item = this.el.querySelector(`[data-skrllr='${ this.settings.hashPrefix }${ index }']:not(a)`)
       const next = item.dataset.skrllr
 
       if (next) {
         item.classList.add('active')
 
         if (this.settings.pagination === true)
-          this.settings.menu.querySelector(`a[data-skrllr='${ index }']`).classList.add('active')
+          this.settings.menu.querySelector(`a[data-skrllr='${ this.settings.hashPrefix }${ index }']`).classList.add('active')
 
         if (history.replaceState && this.settings.updateURL === true) {
-          const href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + (index)
+          // const href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + (index)
+          const href = window.location.href.substr(0, `${ window.location.href.indexOf('#') }#${ this.settings.hashPrefix }${ index }`)
           history.pushState({}, document.title, href)
         }
       }
@@ -110,17 +116,15 @@ class Skrllr {
       this.position = ((index - 1) * 100) * -1
       this.animate(index, next, item)
     } else {
-      this.el.querySelector(`[data-skrllr='1']:not(a)`).classList.add('active')
+      this.el.querySelector(`[data-skrllr='${ this.settings.hashPrefix }1']:not(a)`).classList.add('active')
       if (this.settings.pagination === true)
-        this.settings.menu.querySelector(`a[data-skrllr='1']`).classList.add('active')
+        this.settings.menu.querySelector(`a[data-skrllr='${ this.settings.hashPrefix }1']`).classList.add('active')
     }
   }
 
 
   checkBrowser () {
-    console.log(isMobile);
     if (isMobile) document.body.scrollTop = 1
-    // if (isMobile) window.scrollTo(0, 1)
   }
 
 
@@ -146,7 +150,7 @@ class Skrllr {
    */
   onPaginationClickHandler (event) {
     event.preventDefault()
-    const index = event.target.dataset.skrllr
+    const index = parseInt(event.target.dataset.skrllr.replace(this.settings.hashPrefix, ''))
     this.goTo(index)
   }
 
@@ -231,26 +235,26 @@ class Skrllr {
    * This method compute what is the next view up and his index
    */
   goUp () {
-    const index = this.el.querySelector('.active').dataset.skrllr
-    const current = this.el.querySelector(`[data-skrllr='${ index }']:not(a)`)
-    const next = this.el.querySelector(`[data-skrllr='${ parseInt(index) - 1 }']:not(a)`)
+    const index = parseInt(this.el.querySelector('.active').dataset.skrllr.replace(this.settings.hashPrefix, ''))
+    const current = this.el.querySelector(`[data-skrllr='${ this.settings.hashPrefix }${ index }']:not(a)`)
+    const next = this.el.querySelector(`[data-skrllr='${ this.settings.hashPrefix }${ parseInt(index) - 1 }']:not(a)`)
 
     if (next)
-      this.position = ((next.dataset.skrllr - 1) * 100) * -1
+      this.position = ((parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, '')) - 1) * 100) * -1
     else
       return
 
-    const nextIndex = next.dataset.skrllr
+    const nextIndex = parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, ''))
     current.classList.remove('active')
     next.classList.add('active')
 
     if (this.settings.pagination === true) {
       this.settings.menu.querySelector(`.active`).classList.remove('active')
-      this.settings.menu.querySelector(`a[data-skrllr='${ nextIndex }']`).classList.add('active')
+      this.settings.menu.querySelector(`a[data-skrllr='${ this.settings.hashPrefix }${ nextIndex }']`).classList.add('active')
     }
 
     if (history.replaceState && this.settings.updateURL === true) {
-      const href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + (parseInt(index) - 1)
+      const href = window.location.href.substr(0, window.location.href.indexOf('#')) + `#${ this.settings.hashPrefix }${ index - 1 }`
       history.pushState({}, document.title, href)
     }
 
@@ -262,26 +266,26 @@ class Skrllr {
    * This method compute what is the next view down and his index
    */
   goDown () {
-    const index = this.el.querySelector('.active').dataset.skrllr
-    const current = this.el.querySelector(`[data-skrllr='${ index }']:not(a)`)
-    const next = this.el.querySelector(`[data-skrllr='${ parseInt(index) + 1 }']:not(a)`)
+    const index = parseInt(this.el.querySelector('.active').dataset.skrllr.replace(this.settings.hashPrefix, ''))
+    const current = this.el.querySelector(`[data-skrllr='${ this.settings.hashPrefix }${ index }']:not(a)`)
+    const next = this.el.querySelector(`[data-skrllr='${ this.settings.hashPrefix }${ index + 1 }']:not(a)`)
 
     if (next)
       this.position = (index * 100) * -1
     else
       return
 
-    const nextIndex = next.dataset.skrllr
+    const nextIndex = parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, ''))
     current.classList.remove('active')
     next.classList.add('active')
 
     if (this.settings.pagination === true) {
       this.settings.menu.querySelector(`.active`).classList.remove('active')
-      this.settings.menu.querySelector(`a[data-skrllr='${ nextIndex }']`).classList.add('active')
+      this.settings.menu.querySelector(`a[data-skrllr='${ this.settings.hashPrefix }${ nextIndex }']`).classList.add('active')
     }
 
     if (history.replaceState && this.settings.updateURL === true) {
-      const href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + (parseInt(index) + 1)
+      const href = window.location.href.substr(0, window.location.href.indexOf('#')) + `#${ this.settings.hashPrefix }${ index + 1 }`
       history.pushState({}, document.title, href)
     }
 
@@ -294,22 +298,22 @@ class Skrllr {
    */
   goTo (index) {
     const current = this.el.querySelector('.active')
-    const next = this.el.querySelector(`[data-skrllr='${ index }']:not(a)`)
+    const next = this.el.querySelector(`[data-skrllr='${ this.settings.hashPrefix }${ index }']:not(a)`)
 
     if (next) {
-      const nextIndex = next.dataset.skrllr
+      const nextIndex = parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, ''))
       current.classList.remove('active')
       next.classList.add('active')
 
       if (this.settings.pagination === true) {
         this.settings.menu.querySelector(`.active`).classList.remove('active')
-        this.settings.menu.querySelector(`a[data-skrllr='${ index }']`).classList.add('active')
+        this.settings.menu.querySelector(`a[data-skrllr='${ this.settings.hashPrefix }${ index }']`).classList.add('active')
       }
 
       this.position = ((index - 1) * 100) * -1
 
       if (history.replaceState && this.settings.updateURL === true) {
-        const href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + (index)
+        const href = window.location.href.substr(0, window.location.href.indexOf('#')) + `#${ this.settings.hashPrefix }${ index }`
         history.pushState({}, document.title, href)
       }
 
