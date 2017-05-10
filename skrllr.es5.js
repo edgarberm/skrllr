@@ -24,6 +24,7 @@ var Skrllr = function () {
       pagination: true,
       menu: null,
       updateURL: false,
+      hashPrefix: '',
       beforeTransition: null,
       afterTransition: null
     };
@@ -48,9 +49,14 @@ var Skrllr = function () {
 
     this.addOrphanLinks();
     this.addDataAttributes();
-    this.addEventListeners();
     this.checkHash();
-    this.checkBrowser();
+
+    if (isMobile) {
+      document.body.scrollTop = 1;
+      this.addTouchEventListeners();
+    } else {
+      this.addMouseEventListeners();
+    }
   }
 
   /**
@@ -97,28 +103,37 @@ var Skrllr = function () {
     value: function addDataAttributes() {
       for (var i = 0; i < this.total; i++) {
         this.sections[i].classList.add('skrllr-section');
-        this.sections[i].dataset.skrllr = i + 1;
-        this.position = this.position + 100;
+        this.sections[i].dataset.skrllr = this.settings.hashPrefix + (i + 1);
+        // this.position = this.position + 100
 
         if (this.settings.pagination === true) {
           var items = this.settings.menu.querySelectorAll('li a');
-          items[i].dataset.skrllr = i + 1;
-          items[i].href = '#' + (i + 1);
+          items[i].dataset.skrllr = this.settings.hashPrefix + (i + 1);
+          items[i].href = '#' + this.settings.hashPrefix + (i + 1);
           items[i].addEventListener('click', this.onPaginationClickHandler.bind(this), false);
         }
       }
     }
 
     /**
-     * Add all event listener
+     * Add all mouse event listeners
      */
 
   }, {
-    key: 'addEventListeners',
-    value: function addEventListeners() {
+    key: 'addMouseEventListeners',
+    value: function addMouseEventListeners() {
       document.addEventListener('mousewheel', this.mouseWheelHandler.bind(this), false);
       document.addEventListener('DOMMouseScroll', this.mouseWheelHandler.bind(this), false);
       document.addEventListener('keydown', this.keyDownHandler.bind(this), false);
+    }
+
+    /**
+     * Add all touch event listeners
+     */
+
+  }, {
+    key: 'addTouchEventListeners',
+    value: function addTouchEventListeners() {
       document.addEventListener('touchstart', this.swipeStart.bind(this), false);
       document.addEventListener('touchmove', this.swipeMove.bind(this), false);
       document.addEventListener('touchend', this.swipeEnd.bind(this), false);
@@ -131,18 +146,18 @@ var Skrllr = function () {
   }, {
     key: 'checkHash',
     value: function checkHash() {
-      if (window.location.hash !== '' && window.location.hash !== '#1') {
-        var index = window.location.hash.replace('#', '');
-        var item = this.el.querySelector('[data-skrllr=\'' + index + '\']:not(a)');
+      if (window.location.hash !== '' && window.location.hash !== '#' + this.settings.hashPrefix + '1') {
+        var index = window.location.hash.replace('#' + this.settings.hashPrefix, '');
+        var item = this.el.querySelector('[data-skrllr=\'' + this.settings.hashPrefix + index + '\']:not(a)');
         var next = item.dataset.skrllr;
 
         if (next) {
           item.classList.add('active');
 
-          if (this.settings.pagination === true) this.settings.menu.querySelector('a[data-skrllr=\'' + index + '\']').classList.add('active');
+          if (this.settings.pagination === true) this.settings.menu.querySelector('a[data-skrllr=\'' + this.settings.hashPrefix + index + '\']').classList.add('active');
 
           if (history.replaceState && this.settings.updateURL === true) {
-            var href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + index;
+            var href = window.location.href.substr(0, window.location.href.indexOf('#') + '#' + this.settings.hashPrefix + index);
             history.pushState({}, document.title, href);
           }
         }
@@ -150,16 +165,9 @@ var Skrllr = function () {
         this.position = (index - 1) * 100 * -1;
         this.animate(index, next, item);
       } else {
-        this.el.querySelector('[data-skrllr=\'1\']:not(a)').classList.add('active');
-        if (this.settings.pagination === true) this.settings.menu.querySelector('a[data-skrllr=\'1\']').classList.add('active');
+        this.el.querySelector('[data-skrllr=\'' + this.settings.hashPrefix + '1\']:not(a)').classList.add('active');
+        if (this.settings.pagination === true) this.settings.menu.querySelector('a[data-skrllr=\'' + this.settings.hashPrefix + '1\']').classList.add('active');
       }
-    }
-  }, {
-    key: 'checkBrowser',
-    value: function checkBrowser() {
-      console.log(isMobile);
-      if (isMobile) document.body.scrollTop = 1;
-      // if (isMobile) window.scrollTo(0, 1)
     }
 
     /**
@@ -190,7 +198,7 @@ var Skrllr = function () {
     key: 'onPaginationClickHandler',
     value: function onPaginationClickHandler(event) {
       event.preventDefault();
-      var index = event.target.dataset.skrllr;
+      var index = parseInt(event.target.dataset.skrllr.replace(this.settings.hashPrefix, ''));
       this.goTo(index);
     }
 
@@ -287,23 +295,23 @@ var Skrllr = function () {
   }, {
     key: 'goUp',
     value: function goUp() {
-      var index = this.el.querySelector('.active').dataset.skrllr;
-      var current = this.el.querySelector('[data-skrllr=\'' + index + '\']:not(a)');
-      var next = this.el.querySelector('[data-skrllr=\'' + (parseInt(index) - 1) + '\']:not(a)');
+      var index = parseInt(this.el.querySelector('.active').dataset.skrllr.replace(this.settings.hashPrefix, ''));
+      var current = this.el.querySelector('[data-skrllr=\'' + this.settings.hashPrefix + index + '\']:not(a)');
+      var next = this.el.querySelector('[data-skrllr=\'' + this.settings.hashPrefix + (parseInt(index) - 1) + '\']:not(a)');
 
-      if (next) this.position = (next.dataset.skrllr - 1) * 100 * -1;else return;
+      if (next) this.position = (parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, '')) - 1) * 100 * -1;else return;
 
-      var nextIndex = next.dataset.skrllr;
+      var nextIndex = parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, ''));
       current.classList.remove('active');
       next.classList.add('active');
 
       if (this.settings.pagination === true) {
         this.settings.menu.querySelector('.active').classList.remove('active');
-        this.settings.menu.querySelector('a[data-skrllr=\'' + nextIndex + '\']').classList.add('active');
+        this.settings.menu.querySelector('a[data-skrllr=\'' + this.settings.hashPrefix + nextIndex + '\']').classList.add('active');
       }
 
       if (history.replaceState && this.settings.updateURL === true) {
-        var href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + (parseInt(index) - 1);
+        var href = window.location.href.substr(0, window.location.href.indexOf('#')) + ('#' + this.settings.hashPrefix + (index - 1));
         history.pushState({}, document.title, href);
       }
 
@@ -317,23 +325,23 @@ var Skrllr = function () {
   }, {
     key: 'goDown',
     value: function goDown() {
-      var index = this.el.querySelector('.active').dataset.skrllr;
-      var current = this.el.querySelector('[data-skrllr=\'' + index + '\']:not(a)');
-      var next = this.el.querySelector('[data-skrllr=\'' + (parseInt(index) + 1) + '\']:not(a)');
+      var index = parseInt(this.el.querySelector('.active').dataset.skrllr.replace(this.settings.hashPrefix, ''));
+      var current = this.el.querySelector('[data-skrllr=\'' + this.settings.hashPrefix + index + '\']:not(a)');
+      var next = this.el.querySelector('[data-skrllr=\'' + this.settings.hashPrefix + (index + 1) + '\']:not(a)');
 
       if (next) this.position = index * 100 * -1;else return;
 
-      var nextIndex = next.dataset.skrllr;
+      var nextIndex = parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, ''));
       current.classList.remove('active');
       next.classList.add('active');
 
       if (this.settings.pagination === true) {
         this.settings.menu.querySelector('.active').classList.remove('active');
-        this.settings.menu.querySelector('a[data-skrllr=\'' + nextIndex + '\']').classList.add('active');
+        this.settings.menu.querySelector('a[data-skrllr=\'' + this.settings.hashPrefix + nextIndex + '\']').classList.add('active');
       }
 
       if (history.replaceState && this.settings.updateURL === true) {
-        var href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + (parseInt(index) + 1);
+        var href = window.location.href.substr(0, window.location.href.indexOf('#')) + ('#' + this.settings.hashPrefix + (index + 1));
         history.pushState({}, document.title, href);
       }
 
@@ -348,22 +356,22 @@ var Skrllr = function () {
     key: 'goTo',
     value: function goTo(index) {
       var current = this.el.querySelector('.active');
-      var next = this.el.querySelector('[data-skrllr=\'' + index + '\']:not(a)');
+      var next = this.el.querySelector('[data-skrllr=\'' + this.settings.hashPrefix + index + '\']:not(a)');
 
       if (next) {
-        var nextIndex = next.dataset.skrllr;
+        var nextIndex = parseInt(next.dataset.skrllr.replace(this.settings.hashPrefix, ''));
         current.classList.remove('active');
         next.classList.add('active');
 
         if (this.settings.pagination === true) {
           this.settings.menu.querySelector('.active').classList.remove('active');
-          this.settings.menu.querySelector('a[data-skrllr=\'' + index + '\']').classList.add('active');
+          this.settings.menu.querySelector('a[data-skrllr=\'' + this.settings.hashPrefix + index + '\']').classList.add('active');
         }
 
         this.position = (index - 1) * 100 * -1;
 
         if (history.replaceState && this.settings.updateURL === true) {
-          var href = window.location.href.substr(0, window.location.href.indexOf('#')) + '#' + index;
+          var href = window.location.href.substr(0, window.location.href.indexOf('#')) + ('#' + this.settings.hashPrefix + index);
           history.pushState({}, document.title, href);
         }
 
